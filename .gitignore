@@ -1,0 +1,15 @@
+**/target
+**/nbproject
+
+# Credentials to connect to SFTP server
+id_rsa_DEV
+known_hosts
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+**/.terragrunt-cache/*
