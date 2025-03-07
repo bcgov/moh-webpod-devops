@@ -85,7 +85,7 @@ variable "db_instance_identifier" {
 
 variable "timezone" {
   description = "Default timezone to use for containers + database"
-  default     = "America/Vancouver"
+  default     = "US/Pacific"
   type        = string
 }
 

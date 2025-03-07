@@ -61,8 +61,8 @@ module "aurora_postgresql_v2" {
   apply_immediately   = true
   skip_final_snapshot = true
 
-  db_parameter_group_name         = aws_db_parameter_group.hlbc_postgresql13.id
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.hlbc_postgresql13.id
+  db_parameter_group_name         = aws_db_parameter_group.hlbc_mysql_db_parameter_group.id
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.hlbc_mysql_cluster_parameter_group.id
 
   serverlessv2_scaling_configuration = {
     min_capacity = var.aurora_acu_min
@@ -82,16 +82,16 @@ module "aurora_postgresql_v2" {
   enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
 }
 
-resource "aws_db_parameter_group" "hlbc_postgresql13" {
-  name        = "${var.hlbc_cluster_name}-parameter-group"
+resource "aws_db_parameter_group" "hlbc_mysql_db_parameter_group" {
+  name        = "${var.hlbc_cluster_name}-db-parameter-group"
   family      = "aurora-mysql8.0"
-  description = "${var.hlbc_cluster_name}-parameter-group"
+  description = "${var.hlbc_cluster_name}-db-parameter-group"
   tags = {
     managed-by = "terraform"
   }
 }
 
-resource "aws_rds_cluster_parameter_group" "hlbc_postgresql13" {
+resource "aws_rds_cluster_parameter_group" "hlbc_mysql_cluster_parameter_group" {
   name        = "${var.hlbc_cluster_name}-cluster-parameter-group"
   family      = "aurora-mysql8.0"
   description = "${var.hlbc_cluster_name}-cluster-parameter-group"
@@ -99,7 +99,7 @@ resource "aws_rds_cluster_parameter_group" "hlbc_postgresql13" {
     managed-by = "terraform"
   }
   parameter {
-    name  = "timezone"
+    name  = "time_zone"
     value = var.timezone
   }
 }
