@@ -36,7 +36,7 @@ variable "common_tags" {
 }
 
 variable "health_check_path" {
-  default = "/callback"
+  default = "/"
 }
 
 variable "alb_name" {
@@ -47,7 +47,7 @@ variable "alb_name" {
 
 variable "app_port" {
   description = "Port exposed by the docker image to redirect traffic to"
-  default     = 8181
+  default     = 80
 }
 
 variable "app_image" {

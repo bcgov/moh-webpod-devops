@@ -9,7 +9,7 @@ generate "dev_tfvars" {
   contents          = <<-EOF
   fargate_cpu = 512
   fargate_memory = 1024
-  app_port = 8181
+  app_port = 80
   fam_console_idp_name = "DEV-IDIR"
   alb_origin_id = "hsh.ynr9ed-dev.nimbus.cloud.gov.bc.ca"
   application_url = "hsh.ynr9ed-dev.nimbus.cloud.gov.bc.ca"

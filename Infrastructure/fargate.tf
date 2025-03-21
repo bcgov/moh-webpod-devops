@@ -22,12 +22,48 @@ resource "aws_ecs_task_definition" "hlbc_td" {
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
   tags                     = local.common_tags
+  volume {
+    name = "hlbc_sites"
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
+      root_directory     = "/sites"
+      transit_encryption = "ENABLED"
+    }
+  }
+
+  volume {
+    name = "hlbc_modules"
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
+      root_directory     = "/modules"
+      transit_encryption = "ENABLED"
+    }
+  }
+
+  volume {
+    name = "hlbc_profiles"
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
+      root_directory     = "/profiles"
+      transit_encryption = "ENABLED"
+    }
+  }
+
+  volume {
+    name = "hlbc_themes"
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
+      root_directory     = "/themes"
+      transit_encryption = "ENABLED"
+    }
+  }
+
   container_definitions = jsonencode([
     {
       essential = true
-      name      = "${var.application}-${var.target_env}-definition"
+      name      = "${var.application}-${var.target_env}-drupal"
       #change to variable to env. for GH Actions
-      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/gis:latest"
+      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.3"
       cpu         = var.fargate_cpu
       memory      = var.fargate_memory
       networkMode = "awsvpc"
@@ -38,49 +74,17 @@ resource "aws_ecs_task_definition" "hlbc_td" {
           hostPort      = var.app_port
         }
       ]
-      secrets = [
-        { name = "PG_USER",
-        valueFrom = "${aws_secretsmanager_secret_version.rds_credentials.arn}:username::" },
-        { name = "PG_PASSWORD",
-        valueFrom = "${aws_secretsmanager_secret_version.rds_credentials.arn}:password::" },
-        { name = "JDBC_SETTING",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_jdbc_setting.arn },
-        { name = "KEYCLOAK_CLIENT_SECRET",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_keycloak_client_secret.arn },
-        { name = "PROVIDER_URI",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_provider_uri.arn },
-        { name = "REDIRECT_URI",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_redirect_uri.arn },
-        { name = "SITEMINDER_LOGOUT_URI",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_siteminder_logout_uri.arn },
-        { name = "PHSA_LOGOUT_URI",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_phsa_logout_uri.arn },
-        { name = "AWS_API_URL",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_aws_api_url.arn },
-        { name = "CREATE_IMMEDIATE_SCHEDULER",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_create_immediate_scheduler.arn },
-        { name = "EMAIL_SUBJECT",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_email_subject.arn },
-        { name = "FED_FILE_HOST",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_fed_file_host.arn },
-        { name = "FED_FILE_HOST_USER_ID",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_fed_file_host_user_id.arn },
-        { name = "HARS_FILE_HOST",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_hars_file_host.arn },
-        { name = "HARS_FILE_HOST_USER_ID",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_hars_file_host_user_id.arn },
-        { name = "SCHEDULE",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_schedule.arn },
-        { name = "BATCH_SCHEDULE",
-        valueFrom = aws_secretsmanager_secret_version.hlbc_batch_schedule.arn },
-      ]
       environment = [
-        { name = "JVM_XMX",
-        value = "\\-Xmx1024m" },
-        { name = "JVM_XMS",
-        value = "\\-Xms512m" },
-        { name = "TZ",
-        value = var.timezone },
+        { name = "DRUPAL_DB_HOST",
+        value = module.aurora_postgresql_v2.cluster_endpoint },
+        { name = "DRUPAL_DB_PORT",
+        value = "3306" },
+        { name = "DRUPAL_DB_USER",
+        value = var.hlbc_master_username },
+        { name = "DRUPAL_DB_PASSWORD",
+        value = random_password.hlbc_master_password.result },
+        { name = "DRUPAL_DB_NAME",
+        value = var.hlbc_database_name },
       ]
       #change awslog group
       logConfiguration = {
@@ -92,6 +96,56 @@ resource "aws_ecs_task_definition" "hlbc_td" {
           awslogs-stream-prefix = "ecs"
         }
       }
+      mountPoints = [
+        {
+          sourceVolume  = "hlbc_sites"
+          containerPath = "/var/www/html/sites"
+          readOnly      = false
+          portMappings  = [
+            {
+              protocol      = "tcp"
+              containerPort = var.app_port
+              hostPort      = var.app_port
+            }
+          ]
+        },
+        {
+          sourceVolume  = "hlbc_modules"
+          containerPath = "/var/www/html/modules"
+          readOnly      = false
+          portMappings  = [
+            {
+              protocol      = "tcp"
+              containerPort = var.app_port
+              hostPort      = var.app_port
+            }
+          ]
+        },
+        {
+          sourceVolume  = "hlbc_themes"
+          containerPath = "/var/www/html/themes"
+          readOnly      = false
+          portMappings  = [
+            {
+              protocol      = "tcp"
+              containerPort = var.app_port
+              hostPort      = var.app_port
+            }
+          ]
+        },
+        {
+          sourceVolume  = "hlbc_profiles"
+          containerPath = "/var/www/html/profiles"
+          readOnly      = false
+          portMappings  = [
+            {
+              protocol      = "tcp"
+              containerPort = var.app_port
+              hostPort      = var.app_port
+            }
+          ]
+        }
+      ]
     }
   ])
 }
@@ -117,7 +171,7 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = aws_alb_target_group.app.id
-    container_name   = "${var.application}-${var.target_env}-definition"
+    container_name   = "${var.application}-${var.target_env}-drupal"
     container_port   = var.app_port
   }
 

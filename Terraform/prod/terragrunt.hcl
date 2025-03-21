@@ -9,7 +9,7 @@ generate "prod_tfvars" {
   contents          = <<-EOF
   fargate_cpu = 512
   fargate_memory = 1024
-  app_port = 8181
+  app_port = 80
   fam_console_idp_name = "PROD-IDIR"
   alb_origin_id = "gis.hlth.gov.bc.ca"
   application_url = "gis.hlth.gov.bc.ca"

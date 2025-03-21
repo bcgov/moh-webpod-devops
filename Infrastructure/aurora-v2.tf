@@ -9,6 +9,22 @@ resource "random_password" "hlbc_master_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
+resource "aws_secretsmanager_secret" "hlbc_mysql_root_password" {
+  name = "${var.application}_mysql_root_password"
+}
+
+resource "aws_secretsmanager_secret_version" "hlbc_mysql_root_password_version" {
+  secret_id     = aws_secretsmanager_secret.hlbc_mysql_root_password.id
+  secret_string = random_password.hlbc_master_password.result
+}
+
+# Just doing this termporarily to hardcode the secret into the docker container
+output "hlbc_master_password" {
+  value       = random_password.hlbc_master_password.result
+  description = "The generated master password for the database"
+  sensitive   = true
+}
+
 variable "hlbc_master_username" {
   description = "The username for the DB master user"
   type        = string

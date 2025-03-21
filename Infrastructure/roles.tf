@@ -108,3 +108,71 @@ resource "aws_iam_role_policy_attachment" "api_execution_attachment" {
   role       = aws_iam_role.api_execution_role.name
   policy_arn = aws_iam_policy.execution_policy.arn
 }
+
+resource "aws_iam_policy" "write_logs_policy" {
+  name        = "write_logs_policy"
+  description = "Policy to allow ECS tasks to write logs"
+
+  policy = <<EOT
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:ca-central-1:666395672448:log-group:/ecs/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:ca-central-1:666395672448:log-group:/ecs/*:log-stream:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "ecs:UpdateService",
+            "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+              "ec2:DescribeNetworkInterfaces",
+              "ec2:CreateNetworkInterface",
+              "ec2:DeleteNetworkInterface",
+              "ec2:DescribeInstances",
+              "ec2:AttachNetworkInterface"
+          ],
+          "Resource": "*"
+        }
+    ]
+}
+EOT
+}
+
+# Attach the custom write_logs_policy to the ECS task execution role
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_write_logs" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.write_logs_policy.arn
+}
+
+resource "aws_iam_policy" "efs_access_policy" {
+  name        = "efs-access-policy"
+  description = "Allow ECS tasks to use EFS"
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite", "elasticfilesystem:ClientRootAccess"],
+        Resource = aws_efs_file_system.hlbc_drupal_efs.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_efs" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.efs_access_policy.arn
+}
