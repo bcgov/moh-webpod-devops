@@ -26,8 +26,12 @@ resource "aws_ecs_task_definition" "hlbc_td" {
     name = "hlbc_sites"
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
-      root_directory     = "/sites"
+      root_directory     = "/"
       transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.sites.id
+        iam             = "ENABLED"
+      }
     }
   }
 
@@ -35,8 +39,12 @@ resource "aws_ecs_task_definition" "hlbc_td" {
     name = "hlbc_modules"
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
-      root_directory     = "/modules"
+      root_directory     = "/"
       transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.modules.id
+        iam             = "ENABLED"
+      }
     }
   }
 
@@ -44,8 +52,12 @@ resource "aws_ecs_task_definition" "hlbc_td" {
     name = "hlbc_profiles"
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
-      root_directory     = "/profiles"
+      root_directory     = "/"
       transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.profiles.id
+        iam             = "ENABLED"
+      }
     }
   }
 
@@ -53,8 +65,12 @@ resource "aws_ecs_task_definition" "hlbc_td" {
     name = "hlbc_themes"
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.hlbc_drupal_efs.id
-      root_directory     = "/themes"
+      root_directory     = "/"
       transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.themes.id
+        iam             = "ENABLED"
+      }
     }
   }
 
