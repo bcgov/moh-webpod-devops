@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "hlbc_td" {
       essential = true
       name      = "${var.application}-${var.target_env}-drupal"
       #change to variable to env. for GH Actions
-      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.3"
+      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.4"
       cpu         = var.fargate_cpu
       memory      = var.fargate_memory
       networkMode = "awsvpc"

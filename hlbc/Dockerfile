@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /var/www/html
 
 # Ensure permissions for mounted volumes
-RUN chown -R www-data:www-data /var/www/html/sites
-RUN chown -R www-data:www-data /var/www/html/modules
-RUN chown -R www-data:www-data /var/www/html/profiles
-RUN chown -R www-data:www-data /var/www/html/themes
+# RUN chown -R www-data:www-data /var/www/html/sites
+# RUN chown -R www-data:www-data /var/www/html/modules
+# RUN chown -R www-data:www-data /var/www/html/profiles
+# RUN chown -R www-data:www-data /var/www/html/themes
 
 # Expose Apache port
 EXPOSE 80
