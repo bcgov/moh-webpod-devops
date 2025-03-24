@@ -16,6 +16,7 @@ WORKDIR /var/www/html
 # RUN chown -R www-data:www-data /var/www/html/modules
 # RUN chown -R www-data:www-data /var/www/html/profiles
 # RUN chown -R www-data:www-data /var/www/html/themes
+RUN chmod -R 777 /var/www/html/sites
 
 # Expose Apache port
 EXPOSE 80
