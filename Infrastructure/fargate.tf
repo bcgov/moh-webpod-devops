@@ -1,5 +1,33 @@
+
+# resource "aws_kms_key" "hlbc_ecs_exec_key" {
+#   description             = "hlbc_ecs_exec_key"
+# }
+
+# resource "aws_cloudwatch_log_group" "hlbc_ecs_exec_cluster_log_group2" {
+#   name = "hlbc_ecs_exec_cluster_log_group2"
+#   retention_in_days = 90
+# }
+
 resource "aws_ecs_cluster" "hlbc_cluster" {
   name = "${var.application}_cluster"
+  # containerInsights is for debugging only. disable in prod?
+  setting {
+    name  = "containerInsights"
+    value = "enhanced"
+  }
+
+  # configuration {
+  #   execute_command_configuration {
+  #     kms_key_id = aws_kms_key.hlbc_ecs_exec_key.arn
+  #     logging    = "OVERRIDE"
+
+  #     log_configuration {
+  #       cloud_watch_encryption_enabled = true
+  #       cloud_watch_log_group_name     = aws_cloudwatch_log_group.hlbc_ecs_exec_cluster_log_group2.name
+  #     }
+  #   }
+  # }
+
 }
 
 resource "aws_ecs_cluster_capacity_providers" "hlbc_cluster" {
@@ -9,7 +37,6 @@ resource "aws_ecs_cluster_capacity_providers" "hlbc_cluster" {
   default_capacity_provider_strategy {
     capacity_provider = "FARGATE"
     weight            = 100
-
   }
 }
 
@@ -79,7 +106,7 @@ resource "aws_ecs_task_definition" "hlbc_td" {
       essential = true
       name      = "${var.application}-${var.target_env}-drupal"
       #change to variable to env. for GH Actions
-      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.4"
+      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.5"
       cpu         = var.fargate_cpu
       memory      = var.fargate_memory
       networkMode = "awsvpc"
@@ -162,6 +189,10 @@ resource "aws_ecs_task_definition" "hlbc_td" {
           ]
         }
       ]
+      # This was added to try to get ECS Exec to work. Never got it to work so probably time to clean it up.
+      linuxParameters: {
+        initProcessEnabled: true
+      }
     }
   ])
 }
@@ -174,6 +205,7 @@ resource "aws_ecs_service" "main" {
   health_check_grace_period_seconds = 60
   wait_for_steady_state             = false
   force_new_deployment              = true
+  enable_execute_command = true
 
   triggers = {
     redeployment = var.timestamp

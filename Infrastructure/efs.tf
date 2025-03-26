@@ -16,7 +16,7 @@ resource "aws_efs_access_point" "sites" {
     creation_info {
       owner_uid   = 1000
       owner_gid   = 1000
-      permissions = "755"
+      permissions = "0777"
     }
   }
 }
@@ -34,7 +34,7 @@ resource "aws_efs_access_point" "modules" {
     creation_info {
       owner_uid   = 1000
       owner_gid   = 1000
-      permissions = "755"
+      permissions = "0777"
     }
   }
 }
@@ -52,7 +52,7 @@ resource "aws_efs_access_point" "profiles" {
     creation_info {
       owner_uid   = 1000
       owner_gid   = 1000
-      permissions = "755"
+      permissions = "0777"
     }
   }
 }
@@ -70,7 +70,7 @@ resource "aws_efs_access_point" "themes" {
     creation_info {
       owner_uid   = 1000
       owner_gid   = 1000
-      permissions = "755"
+      permissions = "0777"
     }
   }
 }

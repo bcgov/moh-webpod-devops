@@ -172,7 +172,40 @@ resource "aws_iam_policy" "efs_access_policy" {
   })
 }
 
+# This policy is for debugging. Probably need to delete it.
+# We have never been able to get ECS exec to work so this policy is basically useless. Clean it up.
+
 resource "aws_iam_role_policy_attachment" "ecs_task_efs" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = aws_iam_policy.efs_access_policy.arn
+}
+
+resource "aws_iam_policy" "ecs_exec_policy" {
+  name        = "ecs-exec-policy"
+  description = "Allow ECS tasks to use ECS exec"
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "ssm:StartSession",
+          "ssm:TerminateSession",
+          "ssm:DescribeSessions",
+          "ecs:ExecuteCommand",
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel",
+          "kms:Decrypt"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_ecs_exec" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecs_exec_policy.arn
 }
