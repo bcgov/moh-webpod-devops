@@ -9,12 +9,12 @@ resource "random_password" "hlbc_master_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-resource "aws_secretsmanager_secret" "hlbc_mysql_root_password" {
-  name = "${var.application}_mysql_root_password"
+resource "aws_secretsmanager_secret" "hlbc_mysql_root_password3" {
+  name = "${var.application}_mysql_root_password3"
 }
 
 resource "aws_secretsmanager_secret_version" "hlbc_mysql_root_password_version" {
-  secret_id     = aws_secretsmanager_secret.hlbc_mysql_root_password.id
+  secret_id     = aws_secretsmanager_secret.hlbc_mysql_root_password3.id
   secret_string = random_password.hlbc_master_password.result
 }
 

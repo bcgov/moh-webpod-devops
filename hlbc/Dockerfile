@@ -21,5 +21,7 @@ RUN chmod -R 777 /var/www/html/modules
 RUN chmod -R 777 /var/www/html/profiles
 RUN chmod -R 777 /var/www/html/themes
 
+USER 1000
+
 # Expose Apache port
 EXPOSE 80

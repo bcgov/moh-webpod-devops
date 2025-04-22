@@ -1,11 +1,15 @@
 
-# resource "aws_kms_key" "hlbc_ecs_exec_key" {
-#   description             = "hlbc_ecs_exec_key"
-# }
+resource "aws_kms_key" "hlbc_ecs_exec_key3" {
+  description             = "hlbc_ecs_exec_key"
+}
 
-# resource "aws_cloudwatch_log_group" "hlbc_ecs_exec_cluster_log_group2" {
-#   name = "hlbc_ecs_exec_cluster_log_group2"
-#   retention_in_days = 90
+resource "aws_kms_key" "hlbc_ecs_cloudwatch_key" {
+  description             = "hlbc_ecs_cloudwatch_key"
+}
+
+# resource "aws_cloudwatch_log_group" "hlbc_ecs_exec_cluster_log_group10" {
+#   name = "hlbc_ecs_exec_cluster_log_group10"
+#   kms_key_id = aws_kms_key.hlbc_ecs_cloudwatch_key.arn
 # }
 
 resource "aws_ecs_cluster" "hlbc_cluster" {
@@ -18,12 +22,12 @@ resource "aws_ecs_cluster" "hlbc_cluster" {
 
   # configuration {
   #   execute_command_configuration {
-  #     kms_key_id = aws_kms_key.hlbc_ecs_exec_key.arn
+  #     kms_key_id = aws_kms_key.hlbc_ecs_exec_key3.arn
   #     logging    = "OVERRIDE"
 
   #     log_configuration {
   #       cloud_watch_encryption_enabled = true
-  #       cloud_watch_log_group_name     = aws_cloudwatch_log_group.hlbc_ecs_exec_cluster_log_group2.name
+  #       cloud_watch_log_group_name     = aws_cloudwatch_log_group.hlbc_ecs_exec_cluster_log_group10.name
   #     }
   #   }
   # }
@@ -49,6 +53,7 @@ resource "aws_ecs_task_definition" "hlbc_td" {
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
   tags                     = local.common_tags
+
   volume {
     name = "hlbc_sites"
     efs_volume_configuration {
@@ -106,7 +111,7 @@ resource "aws_ecs_task_definition" "hlbc_td" {
       essential = true
       name      = "${var.application}-${var.target_env}-drupal"
       #change to variable to env. for GH Actions
-      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.5"
+      image       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.ca-central-1.amazonaws.com/drupal:0.7"
       cpu         = var.fargate_cpu
       memory      = var.fargate_memory
       networkMode = "awsvpc"
